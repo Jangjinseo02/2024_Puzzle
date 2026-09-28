@@ -55,13 +55,19 @@ public class Tile : MonoBehaviour
         float distance = Vector2.Distance(Vector2.zero, transform.localPosition); // 거리
         Vector2 dirVec = (Vector2.zero - (Vector2)transform.localPosition).normalized; // 방향 
 
-        while (distance > 0.05f) // 거리가 일정 이상인 동안
+        while (distance > 0.001f) // 거리가 일정 이상인 동안
         {
             if (!isMove) isMove = true;
 
-            transform.localPosition = (Vector2)transform.localPosition + dirVec * 10 * Time.deltaTime; // 위치 이동
-            distance = Vector2.Distance(Vector2.zero, transform.localPosition); // 남은 거리 변경
+            // 현재 이동할 거리 10은 이후에 movespeed같은 변수로 변경
+            float currentDistance =  10 * Time.deltaTime;
             
+            // 현재 이동할 거리와 남은 거리 중 작은 값을 이용해 이번 프레임 이동을 진행
+            transform.localPosition = (Vector2)transform.localPosition + dirVec * Mathf.Min(currentDistance, distance);
+            
+            // 남은 거리 갱신
+            distance = Vector2.Distance(Vector2.zero, transform.localPosition); 
+
             yield return null;
         }
 
