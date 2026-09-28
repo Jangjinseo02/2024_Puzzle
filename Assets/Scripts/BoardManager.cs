@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 public class BoardManager : MonoBehaviour
 {
@@ -30,6 +31,7 @@ public class BoardManager : MonoBehaviour
     public void CreateTileObject(Vector2Int vec)
     {
         int row = vec.x, col = vec.y;
+        //번호 = (몇 번째 줄인지(행)) * (한 줄에 몇 칸(열)인지) + (그 줄에서 몇 번째 칸(열)인지)
         GameObject parent = backGroundTiles[row * maxCol + col]; // maxCol = 5 따라서, 25개의 값이 쭉 나열 될 때 5개의 값마다 다음 행으로 진행
 
         tiles[row, col] = OnCreate?.Invoke(); // 타일 생성 및 부모 위치로 이동
@@ -38,15 +40,26 @@ public class BoardManager : MonoBehaviour
 
     public void RandomCreate()
     {
-        //최대 5 * 5, 25회 반복 중 한 번 생성되면 종료
-        for (int i = 0; i < maxRow * maxCol; i++)
-        {
-            int ranRow = UnityEngine.Random.Range(0, maxRow - 1), ranCol = UnityEngine.Random.Range(0, maxCol - 1);
-            if (tiles[ranRow, ranCol] != null) continue;
+        List<int> emptyTilesAddress = new List<int>();
+        // 빈 공간을 찾는다.
+        for(int i = 0; i < maxRow; i++)
+            for(int j = 0; j < maxCol; j++)
+                if(tiles[i,j] == null) emptyTilesAddress.Add(i * maxCol + j);
 
-            CreateTileObject(new Vector2Int(ranRow, ranCol));
-            break;
-        }
+        // 빈 공간이 없는 경우 추가 처리.
+        if(!(emptyTilesAddress.Count > 0)) return;
+
+        // 빈 공간 중 랜덤 위치 할당
+        int ran = UnityEngine.Random.Range(0, emptyTilesAddress.Count);
+
+        // 값이 15 인 경우 i * maxCol + j = 15, 0 <= i < 5, 0 <= j < 5
+        // i = 3, j = 0... 이걸 어떻게 계산시킴? 암산으로 풀리는데?
+        // i는 몫, j는 나머지로 생각하면 되는듯..
+        int row = emptyTilesAddress[ran] / maxCol;
+        int col = emptyTilesAddress[ran] % maxCol;
+
+        // 랜덤 위치에 타일 생성
+        CreateTileObject(new Vector2Int(row, col));
     }
 
     void BoardUpdate()
